@@ -1,0 +1,38 @@
+Elm.Binary = Elm.Binary || {};
+Elm.Binary.make = function (_elm) {
+   "use strict";
+   _elm.Binary = _elm.Binary || {};
+   if (_elm.Binary.values) return _elm.Binary.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var Room = F2(function (a,b) {    return {x: a,y: b};});
+   var makeGrid = F2(function (width,height) {
+      return $List.concat(A2($List.map,function (room) {    return A2($List.map,room,_U.range(0,height - 1));},A2($List.map,Room,_U.range(0,width - 1))));
+   });
+   var maze = A2(makeGrid,5,5);
+   var roomSize = 10;
+   var viewRoom = function (room) {
+      return A2($Graphics$Collage.outlined,$Graphics$Collage.solid($Color.black),$Graphics$Collage.square($Basics.toFloat(roomSize)));
+   };
+   var roomPosition = function (room) {    return {ctor: "_Tuple2",_0: $Basics.toFloat(room.x * roomSize),_1: $Basics.toFloat(room.y * roomSize)};};
+   var showRoom = function (room) {    return A2($Graphics$Collage.move,roomPosition(room),viewRoom(room));};
+   var main = A3($Graphics$Collage.collage,200,200,A2($List.map,showRoom,maze));
+   return _elm.Binary.values = {_op: _op
+                               ,roomSize: roomSize
+                               ,Room: Room
+                               ,makeGrid: makeGrid
+                               ,maze: maze
+                               ,viewRoom: viewRoom
+                               ,roomPosition: roomPosition
+                               ,showRoom: showRoom
+                               ,main: main};
+};
