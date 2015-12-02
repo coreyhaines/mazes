@@ -28,6 +28,7 @@ makeGrid width height =
 maze : Maze
 maze = makeGrid 10 10
 
+
 northWall : Room -> List (Float, Float)
 northWall room =
   let floatSize = toFloat roomSize
@@ -50,7 +51,9 @@ eastWall room =
 
 viewRoom : Room -> Form
 viewRoom room =
-  traced (solid black) (path ((northWall room) ++ (eastWall room)))
+  (northWall room) ++ (eastWall room)
+  |> path
+  |> traced (solid black)
 
 roomPosition : Room -> (Float, Float)
 roomPosition room =
