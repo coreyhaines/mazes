@@ -5437,23 +5437,47 @@ Elm.Binary.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var Room = F2(function (a,b) {    return {x: a,y: b};});
+   var Room = F4(function (a,b,c,d) {    return {x: a,y: b,northWall: c,eastWall: d};});
    var makeGrid = F2(function (width,height) {
-      return $List.concat(A2($List.map,function (room) {    return A2($List.map,room,_U.range(0,height - 1));},A2($List.map,Room,_U.range(0,width - 1))));
+      return A2($List.map,
+      function (room) {
+         return A2(room,true,true);
+      },
+      A2($List.concatMap,function (room) {    return A2($List.map,room,_U.range(0,height - 1));},A2($List.map,Room,_U.range(0,width - 1))));
    });
-   var maze = A2(makeGrid,5,5);
-   var roomSize = 10;
+   var maze = A2(makeGrid,10,10);
+   var roomSize = 30;
+   var northWall = function (room) {
+      var floatSize = $Basics.toFloat(roomSize);
+      var _p0 = room.northWall;
+      if (_p0 === true) {
+            return _U.list([{ctor: "_Tuple2",_0: 0,_1: floatSize},{ctor: "_Tuple2",_0: floatSize,_1: floatSize}]);
+         } else {
+            return _U.list([]);
+         }
+   };
+   var eastWall = function (room) {
+      var floatSize = $Basics.toFloat(roomSize);
+      var _p1 = room.eastWall;
+      if (_p1 === true) {
+            return _U.list([{ctor: "_Tuple2",_0: floatSize,_1: floatSize},{ctor: "_Tuple2",_0: floatSize,_1: 0}]);
+         } else {
+            return _U.list([]);
+         }
+   };
    var viewRoom = function (room) {
-      return A2($Graphics$Collage.outlined,$Graphics$Collage.solid($Color.black),$Graphics$Collage.square($Basics.toFloat(roomSize)));
+      return A2($Graphics$Collage.traced,$Graphics$Collage.solid($Color.black),$Graphics$Collage.path(A2($Basics._op["++"],northWall(room),eastWall(room))));
    };
    var roomPosition = function (room) {    return {ctor: "_Tuple2",_0: $Basics.toFloat(room.x * roomSize),_1: $Basics.toFloat(room.y * roomSize)};};
    var showRoom = function (room) {    return A2($Graphics$Collage.move,roomPosition(room),viewRoom(room));};
-   var main = A3($Graphics$Collage.collage,200,200,A2($List.map,showRoom,maze));
+   var main = A3($Graphics$Collage.collage,1000,1000,A2($List.map,showRoom,maze));
    return _elm.Binary.values = {_op: _op
                                ,roomSize: roomSize
                                ,Room: Room
                                ,makeGrid: makeGrid
                                ,maze: maze
+                               ,northWall: northWall
+                               ,eastWall: eastWall
                                ,viewRoom: viewRoom
                                ,roomPosition: roomPosition
                                ,showRoom: showRoom
