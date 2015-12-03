@@ -5445,7 +5445,8 @@ Elm.Binary.make = function (_elm) {
       },
       A2($List.concatMap,function (room) {    return A2($List.map,room,_U.range(0,height - 1));},A2($List.map,Room,_U.range(0,width - 1))));
    });
-   var maze = A2(makeGrid,10,10);
+   var gridSize = 10;
+   var maze = A2(makeGrid,gridSize,gridSize);
    var roomSize = 30;
    var northWall = function (room) {
       var floatSize = $Basics.toFloat(roomSize);
@@ -5470,9 +5471,17 @@ Elm.Binary.make = function (_elm) {
    };
    var roomPosition = function (room) {    return {ctor: "_Tuple2",_0: $Basics.toFloat(room.x * roomSize),_1: $Basics.toFloat(room.y * roomSize)};};
    var showRoom = function (room) {    return A2($Graphics$Collage.move,roomPosition(room),viewRoom(room));};
-   var main = A3($Graphics$Collage.collage,1000,1000,A2($List.map,showRoom,maze));
+   var leftBottomWalls = function (size) {
+      var corner = $Basics.toFloat(size * roomSize);
+      return A2($Graphics$Collage.traced,
+      $Graphics$Collage.solid($Color.black),
+      $Graphics$Collage.path(_U.list([{ctor: "_Tuple2",_0: 0,_1: corner},{ctor: "_Tuple2",_0: 0,_1: 0},{ctor: "_Tuple2",_0: corner,_1: 0}])));
+   };
+   var viewMaze = function (maze) {    return A2($List._op["::"],leftBottomWalls(gridSize),A2($List.map,showRoom,maze));};
+   var main = A3($Graphics$Collage.collage,1000,1000,viewMaze(maze));
    return _elm.Binary.values = {_op: _op
                                ,roomSize: roomSize
+                               ,gridSize: gridSize
                                ,Room: Room
                                ,makeGrid: makeGrid
                                ,maze: maze
@@ -5481,5 +5490,7 @@ Elm.Binary.make = function (_elm) {
                                ,viewRoom: viewRoom
                                ,roomPosition: roomPosition
                                ,showRoom: showRoom
+                               ,leftBottomWalls: leftBottomWalls
+                               ,viewMaze: viewMaze
                                ,main: main};
 };

@@ -7,6 +7,9 @@ import Text exposing (..)
 roomSize : Int
 roomSize = 30
 
+gridSize : Int
+gridSize = 10
+
 type alias Room =
   {
     x: Int
@@ -26,7 +29,7 @@ makeGrid width height =
   |> List.map (\room -> room True True)
 
 maze : Maze
-maze = makeGrid 10 10
+maze = makeGrid gridSize gridSize
 
 
 northWall : Room -> List (Float, Float)
@@ -59,12 +62,22 @@ roomPosition : Room -> (Float, Float)
 roomPosition room =
   ((toFloat (room.x*roomSize)), (toFloat (room.y*roomSize)))
 
-
 showRoom : Room -> Form
 showRoom room =
   viewRoom room
   |> move (roomPosition room)
 
+leftBottomWalls : Int -> Form
+leftBottomWalls size =
+  let corner = (toFloat (size*roomSize))
+  in [(0, corner), (0,0), (corner, 0)]
+  |> path
+  |> traced (solid black)
+
+viewMaze : Maze -> List Form
+viewMaze maze =
+  (leftBottomWalls gridSize) :: (List.map showRoom maze)
+
 main : Element
 main =
-  collage 1000 1000 (List.map showRoom maze)
+  collage 1000 1000 (viewMaze maze)
