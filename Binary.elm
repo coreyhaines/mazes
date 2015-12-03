@@ -78,6 +78,10 @@ viewMaze : Maze -> List Form
 viewMaze maze =
   (leftBottomWalls gridSize) :: (List.map showRoom maze)
 
+view : Maze -> Element
+view maze =
+  collage 1000 1000 (viewMaze maze)
+
 main : Element
 main =
-  collage 1000 1000 (viewMaze maze)
+  view maze

@@ -55,7 +55,8 @@ Elm.Binary.make = function (_elm) {
       $Graphics$Collage.path(_U.list([{ctor: "_Tuple2",_0: 0,_1: corner},{ctor: "_Tuple2",_0: 0,_1: 0},{ctor: "_Tuple2",_0: corner,_1: 0}])));
    };
    var viewMaze = function (maze) {    return A2($List._op["::"],leftBottomWalls(gridSize),A2($List.map,showRoom,maze));};
-   var main = A3($Graphics$Collage.collage,1000,1000,viewMaze(maze));
+   var view = function (maze) {    return A3($Graphics$Collage.collage,1000,1000,viewMaze(maze));};
+   var main = view(maze);
    return _elm.Binary.values = {_op: _op
                                ,roomSize: roomSize
                                ,gridSize: gridSize
@@ -69,5 +70,6 @@ Elm.Binary.make = function (_elm) {
                                ,showRoom: showRoom
                                ,leftBottomWalls: leftBottomWalls
                                ,viewMaze: viewMaze
+                               ,view: view
                                ,main: main};
 };
