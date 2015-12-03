@@ -82,6 +82,20 @@ view : Maze -> Element
 view maze =
   collage 1000 1000 (viewMaze maze)
 
+eraseWall : Int -> Int -> Maze -> Maze
+eraseWall x y maze =
+  let
+      isRoom room = room.x == x && room.y == y
+
+      newRoom room =
+        case isRoom room of
+          True ->
+            {room | northWall = False}
+          _ ->
+            room
+  in
+     List.map newRoom maze
+
 main : Element
 main =
-  view maze
+  view (eraseWall 0 0 maze)

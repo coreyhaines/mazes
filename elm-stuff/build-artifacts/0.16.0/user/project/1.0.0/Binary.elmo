@@ -14,6 +14,11 @@ Elm.Binary.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var eraseWall = F3(function (x,y,maze) {
+      var isRoom = function (room) {    return _U.eq(room.x,x) && _U.eq(room.y,y);};
+      var newRoom = function (room) {    var _p0 = isRoom(room);if (_p0 === true) {    return _U.update(room,{northWall: false});} else {    return room;}};
+      return A2($List.map,newRoom,maze);
+   });
    var Room = F4(function (a,b,c,d) {    return {x: a,y: b,northWall: c,eastWall: d};});
    var makeGrid = F2(function (width,height) {
       return A2($List.map,
@@ -27,8 +32,8 @@ Elm.Binary.make = function (_elm) {
    var roomSize = 30;
    var northWall = function (room) {
       var floatSize = $Basics.toFloat(roomSize);
-      var _p0 = room.northWall;
-      if (_p0 === true) {
+      var _p1 = room.northWall;
+      if (_p1 === true) {
             return _U.list([{ctor: "_Tuple2",_0: 0,_1: floatSize},{ctor: "_Tuple2",_0: floatSize,_1: floatSize}]);
          } else {
             return _U.list([]);
@@ -36,8 +41,8 @@ Elm.Binary.make = function (_elm) {
    };
    var eastWall = function (room) {
       var floatSize = $Basics.toFloat(roomSize);
-      var _p1 = room.eastWall;
-      if (_p1 === true) {
+      var _p2 = room.eastWall;
+      if (_p2 === true) {
             return _U.list([{ctor: "_Tuple2",_0: floatSize,_1: floatSize},{ctor: "_Tuple2",_0: floatSize,_1: 0}]);
          } else {
             return _U.list([]);
@@ -56,7 +61,7 @@ Elm.Binary.make = function (_elm) {
    };
    var viewMaze = function (maze) {    return A2($List._op["::"],leftBottomWalls(gridSize),A2($List.map,showRoom,maze));};
    var view = function (maze) {    return A3($Graphics$Collage.collage,1000,1000,viewMaze(maze));};
-   var main = view(maze);
+   var main = view(A3(eraseWall,0,0,maze));
    return _elm.Binary.values = {_op: _op
                                ,roomSize: roomSize
                                ,gridSize: gridSize
@@ -71,5 +76,6 @@ Elm.Binary.make = function (_elm) {
                                ,leftBottomWalls: leftBottomWalls
                                ,viewMaze: viewMaze
                                ,view: view
+                               ,eraseWall: eraseWall
                                ,main: main};
 };
