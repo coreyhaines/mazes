@@ -17,13 +17,8 @@ Elm.Binary.make = function (_elm) {
    var _op = {};
    var East = {ctor: "East"};
    var North = {ctor: "North"};
-   var wallErasures = function (count) {
-      return A2($List.map,
-      function (bool) {
-         return bool ? North : East;
-      },
-      $Basics.fst(A2($Random.generate,A2($Random.list,count,$Random.bool),$Random.initialSeed(1))));
-   };
+   var randomBools = function (count) {    return $Basics.fst(A2($Random.generate,A2($Random.list,count,$Random.bool),$Random.initialSeed(0)));};
+   var wallErasures = function (count) {    return A2($List.map,function (bool) {    return bool ? North : East;},randomBools(count));};
    var Room = F4(function (a,b,c,d) {    return {x: a,y: b,northWall: c,eastWall: d};});
    var makeGrid = F2(function (width,height) {
       return A2($List.map,
@@ -105,6 +100,7 @@ Elm.Binary.make = function (_elm) {
                                ,leftBottomWalls: leftBottomWalls
                                ,viewMaze: viewMaze
                                ,view: view
+                               ,randomBools: randomBools
                                ,North: North
                                ,East: East
                                ,wallErasures: wallErasures

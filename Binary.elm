@@ -4,6 +4,7 @@ import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 import Text exposing (..)
 import Random exposing (generate, bool, initialSeed, list)
+import Time exposing (..)
 
 roomSize : Int
 roomSize = 30
@@ -83,12 +84,16 @@ view : Maze -> Element
 view maze =
   collage 1000 1000 (viewMaze maze)
 
+
+randomBools : Int -> List Bool
+randomBools count =
+  Random.generate (Random.list count Random.bool) (initialSeed 0)
+  |> fst
+
 type Wall = North | East
 wallErasures : Int -> List Wall
 wallErasures count =
-  Random.generate (Random.list count Random.bool) (initialSeed 1)
-  |> fst
-  |> List.map (\bool -> if bool then North else East)
+  List.map (\bool -> if bool then North else East) (randomBools count)
 
 
 eraseWall : Wall -> Room -> Room
