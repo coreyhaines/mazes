@@ -5421,6 +5421,233 @@ Elm.Signal.make = function (_elm) {
                                ,forwardTo: forwardTo
                                ,Mailbox: Mailbox};
 };
+Elm.Random = Elm.Random || {};
+Elm.Random.make = function (_elm) {
+   "use strict";
+   _elm.Random = _elm.Random || {};
+   if (_elm.Random.values) return _elm.Random.values;
+   var _U = Elm.Native.Utils.make(_elm),$Basics = Elm.Basics.make(_elm),$List = Elm.List.make(_elm);
+   var _op = {};
+   var magicNum8 = 2147483562;
+   var range = function (_p0) {    return {ctor: "_Tuple2",_0: 0,_1: magicNum8};};
+   var magicNum7 = 2137383399;
+   var magicNum6 = 2147483563;
+   var magicNum5 = 3791;
+   var magicNum4 = 40692;
+   var magicNum3 = 52774;
+   var magicNum2 = 12211;
+   var magicNum1 = 53668;
+   var magicNum0 = 40014;
+   var generate = F2(function (_p1,seed) {    var _p2 = _p1;return _p2._0(seed);});
+   var Seed = function (a) {    return {ctor: "Seed",_0: a};};
+   var State = F2(function (a,b) {    return {ctor: "State",_0: a,_1: b};});
+   var initState = function (s$) {
+      var s = A2($Basics.max,s$,0 - s$);
+      var q = s / (magicNum6 - 1) | 0;
+      var s2 = A2($Basics._op["%"],q,magicNum7 - 1);
+      var s1 = A2($Basics._op["%"],s,magicNum6 - 1);
+      return A2(State,s1 + 1,s2 + 1);
+   };
+   var next = function (_p3) {
+      var _p4 = _p3;
+      var _p6 = _p4._1;
+      var _p5 = _p4._0;
+      var k$ = _p6 / magicNum3 | 0;
+      var s2$ = magicNum4 * (_p6 - k$ * magicNum3) - k$ * magicNum5;
+      var s2$$ = _U.cmp(s2$,0) < 0 ? s2$ + magicNum7 : s2$;
+      var k = _p5 / magicNum1 | 0;
+      var s1$ = magicNum0 * (_p5 - k * magicNum1) - k * magicNum2;
+      var s1$$ = _U.cmp(s1$,0) < 0 ? s1$ + magicNum6 : s1$;
+      var z = s1$$ - s2$$;
+      var z$ = _U.cmp(z,1) < 0 ? z + magicNum8 : z;
+      return {ctor: "_Tuple2",_0: z$,_1: A2(State,s1$$,s2$$)};
+   };
+   var split = function (_p7) {
+      var _p8 = _p7;
+      var _p11 = _p8._1;
+      var _p10 = _p8._0;
+      var _p9 = $Basics.snd(next(_p8));
+      var t1 = _p9._0;
+      var t2 = _p9._1;
+      var new_s2 = _U.eq(_p11,1) ? magicNum7 - 1 : _p11 - 1;
+      var new_s1 = _U.eq(_p10,magicNum6 - 1) ? 1 : _p10 + 1;
+      return {ctor: "_Tuple2",_0: A2(State,new_s1,t2),_1: A2(State,t1,new_s2)};
+   };
+   var initialSeed = function (n) {    return Seed({state: initState(n),next: next,split: split,range: range});};
+   var Generator = function (a) {    return {ctor: "Generator",_0: a};};
+   var andThen = F2(function (_p12,callback) {
+      var _p13 = _p12;
+      return Generator(function (seed) {
+         var _p14 = _p13._0(seed);
+         var result = _p14._0;
+         var newSeed = _p14._1;
+         var _p15 = callback(result);
+         var genB = _p15._0;
+         return genB(newSeed);
+      });
+   });
+   var map5 = F6(function (func,_p20,_p19,_p18,_p17,_p16) {
+      var _p21 = _p20;
+      var _p22 = _p19;
+      var _p23 = _p18;
+      var _p24 = _p17;
+      var _p25 = _p16;
+      return Generator(function (seed0) {
+         var _p26 = _p21._0(seed0);
+         var a = _p26._0;
+         var seed1 = _p26._1;
+         var _p27 = _p22._0(seed1);
+         var b = _p27._0;
+         var seed2 = _p27._1;
+         var _p28 = _p23._0(seed2);
+         var c = _p28._0;
+         var seed3 = _p28._1;
+         var _p29 = _p24._0(seed3);
+         var d = _p29._0;
+         var seed4 = _p29._1;
+         var _p30 = _p25._0(seed4);
+         var e = _p30._0;
+         var seed5 = _p30._1;
+         return {ctor: "_Tuple2",_0: A5(func,a,b,c,d,e),_1: seed5};
+      });
+   });
+   var map4 = F5(function (func,_p34,_p33,_p32,_p31) {
+      var _p35 = _p34;
+      var _p36 = _p33;
+      var _p37 = _p32;
+      var _p38 = _p31;
+      return Generator(function (seed0) {
+         var _p39 = _p35._0(seed0);
+         var a = _p39._0;
+         var seed1 = _p39._1;
+         var _p40 = _p36._0(seed1);
+         var b = _p40._0;
+         var seed2 = _p40._1;
+         var _p41 = _p37._0(seed2);
+         var c = _p41._0;
+         var seed3 = _p41._1;
+         var _p42 = _p38._0(seed3);
+         var d = _p42._0;
+         var seed4 = _p42._1;
+         return {ctor: "_Tuple2",_0: A4(func,a,b,c,d),_1: seed4};
+      });
+   });
+   var map3 = F4(function (func,_p45,_p44,_p43) {
+      var _p46 = _p45;
+      var _p47 = _p44;
+      var _p48 = _p43;
+      return Generator(function (seed0) {
+         var _p49 = _p46._0(seed0);
+         var a = _p49._0;
+         var seed1 = _p49._1;
+         var _p50 = _p47._0(seed1);
+         var b = _p50._0;
+         var seed2 = _p50._1;
+         var _p51 = _p48._0(seed2);
+         var c = _p51._0;
+         var seed3 = _p51._1;
+         return {ctor: "_Tuple2",_0: A3(func,a,b,c),_1: seed3};
+      });
+   });
+   var map2 = F3(function (func,_p53,_p52) {
+      var _p54 = _p53;
+      var _p55 = _p52;
+      return Generator(function (seed0) {
+         var _p56 = _p54._0(seed0);
+         var a = _p56._0;
+         var seed1 = _p56._1;
+         var _p57 = _p55._0(seed1);
+         var b = _p57._0;
+         var seed2 = _p57._1;
+         return {ctor: "_Tuple2",_0: A2(func,a,b),_1: seed2};
+      });
+   });
+   var map = F2(function (func,_p58) {
+      var _p59 = _p58;
+      return Generator(function (seed0) {    var _p60 = _p59._0(seed0);var a = _p60._0;var seed1 = _p60._1;return {ctor: "_Tuple2",_0: func(a),_1: seed1};});
+   });
+   var listHelp = F4(function (list,n,generate,seed) {
+      listHelp: while (true) if (_U.cmp(n,1) < 0) return {ctor: "_Tuple2",_0: $List.reverse(list),_1: seed}; else {
+            var _p61 = generate(seed);
+            var value = _p61._0;
+            var newSeed = _p61._1;
+            var _v19 = A2($List._op["::"],value,list),_v20 = n - 1,_v21 = generate,_v22 = newSeed;
+            list = _v19;
+            n = _v20;
+            generate = _v21;
+            seed = _v22;
+            continue listHelp;
+         }
+   });
+   var list = F2(function (n,_p62) {    var _p63 = _p62;return Generator(function (seed) {    return A4(listHelp,_U.list([]),n,_p63._0,seed);});});
+   var pair = F2(function (genA,genB) {    return A3(map2,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),genA,genB);});
+   var minInt = -2147483648;
+   var maxInt = 2147483647;
+   var iLogBase = F2(function (b,i) {    return _U.cmp(i,b) < 0 ? 1 : 1 + A2(iLogBase,b,i / b | 0);});
+   var $int = F2(function (a,b) {
+      return Generator(function (_p64) {
+         var _p65 = _p64;
+         var _p70 = _p65._0;
+         var base = 2147483561;
+         var f = F3(function (n,acc,state) {
+            f: while (true) {
+               var _p66 = n;
+               if (_p66 === 0) {
+                     return {ctor: "_Tuple2",_0: acc,_1: state};
+                  } else {
+                     var _p67 = _p70.next(state);
+                     var x = _p67._0;
+                     var state$ = _p67._1;
+                     var _v26 = n - 1,_v27 = x + acc * base,_v28 = state$;
+                     n = _v26;
+                     acc = _v27;
+                     state = _v28;
+                     continue f;
+                  }
+            }
+         });
+         var _p68 = _U.cmp(a,b) < 0 ? {ctor: "_Tuple2",_0: a,_1: b} : {ctor: "_Tuple2",_0: b,_1: a};
+         var lo = _p68._0;
+         var hi = _p68._1;
+         var k = hi - lo + 1;
+         var n = A2(iLogBase,base,k);
+         var _p69 = A3(f,n,1,_p70.state);
+         var v = _p69._0;
+         var state$ = _p69._1;
+         return {ctor: "_Tuple2",_0: lo + A2($Basics._op["%"],v,k),_1: Seed(_U.update(_p70,{state: state$}))};
+      });
+   });
+   var $float = F2(function (a,b) {
+      return Generator(function (seed) {
+         var _p71 = A2(generate,A2($int,minInt,maxInt),seed);
+         var number = _p71._0;
+         var newSeed = _p71._1;
+         var negativeOneToOne = $Basics.toFloat(number) / $Basics.toFloat(maxInt - minInt);
+         var _p72 = _U.cmp(a,b) < 0 ? {ctor: "_Tuple2",_0: a,_1: b} : {ctor: "_Tuple2",_0: b,_1: a};
+         var lo = _p72._0;
+         var hi = _p72._1;
+         var scaled = (lo + hi) / 2 + (hi - lo) * negativeOneToOne;
+         return {ctor: "_Tuple2",_0: scaled,_1: newSeed};
+      });
+   });
+   var bool = A2(map,F2(function (x,y) {    return _U.eq(x,y);})(1),A2($int,0,1));
+   return _elm.Random.values = {_op: _op
+                               ,bool: bool
+                               ,$int: $int
+                               ,$float: $float
+                               ,list: list
+                               ,pair: pair
+                               ,map: map
+                               ,map2: map2
+                               ,map3: map3
+                               ,map4: map4
+                               ,map5: map5
+                               ,andThen: andThen
+                               ,minInt: minInt
+                               ,maxInt: maxInt
+                               ,generate: generate
+                               ,initialSeed: initialSeed};
+};
 Elm.Binary = Elm.Binary || {};
 Elm.Binary.make = function (_elm) {
    "use strict";
@@ -5434,14 +5661,19 @@ Elm.Binary.make = function (_elm) {
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var eraseWall = F3(function (x,y,maze) {
-      var isRoom = function (room) {    return _U.eq(room.x,x) && _U.eq(room.y,y);};
-      var newRoom = function (room) {    var _p0 = isRoom(room);if (_p0 === true) {    return _U.update(room,{northWall: false});} else {    return room;}};
-      return A2($List.map,newRoom,maze);
-   });
+   var East = {ctor: "East"};
+   var North = {ctor: "North"};
+   var wallErasures = function (count) {
+      return A2($List.map,
+      function (bool) {
+         return bool ? North : East;
+      },
+      $Basics.fst(A2($Random.generate,A2($Random.list,count,$Random.bool),$Random.initialSeed(1))));
+   };
    var Room = F4(function (a,b,c,d) {    return {x: a,y: b,northWall: c,eastWall: d};});
    var makeGrid = F2(function (width,height) {
       return A2($List.map,
@@ -5452,11 +5684,35 @@ Elm.Binary.make = function (_elm) {
    });
    var gridSize = 10;
    var maze = A2(makeGrid,gridSize,gridSize);
+   var eraseWall = F2(function (wall,room) {
+      var size = gridSize - 1;
+      var _p0 = {ctor: "_Tuple2",_0: size - room.x,_1: size - room.y};
+      if (_p0.ctor === "_Tuple2" && _p0._0 === 0 && _p0._1 === 0) {
+            return room;
+         } else {
+            var _p1 = wall;
+            if (_p1.ctor === "North") {
+                  var _p2 = _U.cmp(room.y,gridSize - 1) < 0;
+                  if (_p2 === true) {
+                        return _U.update(room,{northWall: false});
+                     } else {
+                        return _U.update(room,{eastWall: false});
+                     }
+               } else {
+                  var _p3 = _U.cmp(room.x,gridSize - 1) < 0;
+                  if (_p3 === true) {
+                        return _U.update(room,{eastWall: false});
+                     } else {
+                        return _U.update(room,{northWall: false});
+                     }
+               }
+         }
+   });
    var roomSize = 30;
    var northWall = function (room) {
       var floatSize = $Basics.toFloat(roomSize);
-      var _p1 = room.northWall;
-      if (_p1 === true) {
+      var _p4 = room.northWall;
+      if (_p4 === true) {
             return _U.list([{ctor: "_Tuple2",_0: 0,_1: floatSize},{ctor: "_Tuple2",_0: floatSize,_1: floatSize}]);
          } else {
             return _U.list([]);
@@ -5464,8 +5720,8 @@ Elm.Binary.make = function (_elm) {
    };
    var eastWall = function (room) {
       var floatSize = $Basics.toFloat(roomSize);
-      var _p2 = room.eastWall;
-      if (_p2 === true) {
+      var _p5 = room.eastWall;
+      if (_p5 === true) {
             return _U.list([{ctor: "_Tuple2",_0: floatSize,_1: floatSize},{ctor: "_Tuple2",_0: floatSize,_1: 0}]);
          } else {
             return _U.list([]);
@@ -5484,7 +5740,7 @@ Elm.Binary.make = function (_elm) {
    };
    var viewMaze = function (maze) {    return A2($List._op["::"],leftBottomWalls(gridSize),A2($List.map,showRoom,maze));};
    var view = function (maze) {    return A3($Graphics$Collage.collage,1000,1000,viewMaze(maze));};
-   var main = view(A3(eraseWall,0,0,maze));
+   var main = view(A3($List.map2,eraseWall,wallErasures(gridSize * gridSize),maze));
    return _elm.Binary.values = {_op: _op
                                ,roomSize: roomSize
                                ,gridSize: gridSize
@@ -5499,6 +5755,9 @@ Elm.Binary.make = function (_elm) {
                                ,leftBottomWalls: leftBottomWalls
                                ,viewMaze: viewMaze
                                ,view: view
+                               ,North: North
+                               ,East: East
+                               ,wallErasures: wallErasures
                                ,eraseWall: eraseWall
                                ,main: main};
 };

@@ -3,6 +3,7 @@ import Color exposing (..)
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 import Text exposing (..)
+import Random exposing (generate, bool, initialSeed, list)
 
 roomSize : Int
 roomSize = 30
@@ -82,20 +83,38 @@ view : Maze -> Element
 view maze =
   collage 1000 1000 (viewMaze maze)
 
-eraseWall : Int -> Int -> Maze -> Maze
-eraseWall x y maze =
-  let
-      isRoom room = room.x == x && room.y == y
+type Wall = North | East
+wallErasures : Int -> List Wall
+wallErasures count =
+  Random.generate (Random.list count Random.bool) (initialSeed 1)
+  |> fst
+  |> List.map (\bool -> if bool then North else East)
 
-      newRoom room =
-        case isRoom room of
-          True ->
-            {room | northWall = False}
-          _ ->
-            room
+
+eraseWall : Wall -> Room -> Room
+eraseWall wall room =
+  let size = gridSize-1
   in
-     List.map newRoom maze
+    case (size - room.x, size - room.y) of
+      (0, 0) ->
+        room
+      _ ->
+        case wall of
+          North ->
+            case room.y < (gridSize-1) of
+              True ->
+                {room | northWall = False}
+              False ->
+                {room | eastWall = False}
+          East ->
+            case room.x < (gridSize-1) of
+              True ->
+                {room | eastWall = False}
+              False ->
+                {room | northWall = False}
+
 
 main : Element
 main =
-  view (eraseWall 0 0 maze)
+  List.map2 eraseWall (wallErasures (gridSize * gridSize)) maze
+  |> view

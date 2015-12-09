@@ -11,14 +11,19 @@ Elm.Binary.make = function (_elm) {
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var eraseWall = F3(function (x,y,maze) {
-      var isRoom = function (room) {    return _U.eq(room.x,x) && _U.eq(room.y,y);};
-      var newRoom = function (room) {    var _p0 = isRoom(room);if (_p0 === true) {    return _U.update(room,{northWall: false});} else {    return room;}};
-      return A2($List.map,newRoom,maze);
-   });
+   var East = {ctor: "East"};
+   var North = {ctor: "North"};
+   var wallErasures = function (count) {
+      return A2($List.map,
+      function (bool) {
+         return bool ? North : East;
+      },
+      $Basics.fst(A2($Random.generate,A2($Random.list,count,$Random.bool),$Random.initialSeed(1))));
+   };
    var Room = F4(function (a,b,c,d) {    return {x: a,y: b,northWall: c,eastWall: d};});
    var makeGrid = F2(function (width,height) {
       return A2($List.map,
@@ -29,11 +34,35 @@ Elm.Binary.make = function (_elm) {
    });
    var gridSize = 10;
    var maze = A2(makeGrid,gridSize,gridSize);
+   var eraseWall = F2(function (wall,room) {
+      var size = gridSize - 1;
+      var _p0 = {ctor: "_Tuple2",_0: size - room.x,_1: size - room.y};
+      if (_p0.ctor === "_Tuple2" && _p0._0 === 0 && _p0._1 === 0) {
+            return room;
+         } else {
+            var _p1 = wall;
+            if (_p1.ctor === "North") {
+                  var _p2 = _U.cmp(room.y,gridSize - 1) < 0;
+                  if (_p2 === true) {
+                        return _U.update(room,{northWall: false});
+                     } else {
+                        return _U.update(room,{eastWall: false});
+                     }
+               } else {
+                  var _p3 = _U.cmp(room.x,gridSize - 1) < 0;
+                  if (_p3 === true) {
+                        return _U.update(room,{eastWall: false});
+                     } else {
+                        return _U.update(room,{northWall: false});
+                     }
+               }
+         }
+   });
    var roomSize = 30;
    var northWall = function (room) {
       var floatSize = $Basics.toFloat(roomSize);
-      var _p1 = room.northWall;
-      if (_p1 === true) {
+      var _p4 = room.northWall;
+      if (_p4 === true) {
             return _U.list([{ctor: "_Tuple2",_0: 0,_1: floatSize},{ctor: "_Tuple2",_0: floatSize,_1: floatSize}]);
          } else {
             return _U.list([]);
@@ -41,8 +70,8 @@ Elm.Binary.make = function (_elm) {
    };
    var eastWall = function (room) {
       var floatSize = $Basics.toFloat(roomSize);
-      var _p2 = room.eastWall;
-      if (_p2 === true) {
+      var _p5 = room.eastWall;
+      if (_p5 === true) {
             return _U.list([{ctor: "_Tuple2",_0: floatSize,_1: floatSize},{ctor: "_Tuple2",_0: floatSize,_1: 0}]);
          } else {
             return _U.list([]);
@@ -61,7 +90,7 @@ Elm.Binary.make = function (_elm) {
    };
    var viewMaze = function (maze) {    return A2($List._op["::"],leftBottomWalls(gridSize),A2($List.map,showRoom,maze));};
    var view = function (maze) {    return A3($Graphics$Collage.collage,1000,1000,viewMaze(maze));};
-   var main = view(A3(eraseWall,0,0,maze));
+   var main = view(A3($List.map2,eraseWall,wallErasures(gridSize * gridSize),maze));
    return _elm.Binary.values = {_op: _op
                                ,roomSize: roomSize
                                ,gridSize: gridSize
@@ -76,6 +105,9 @@ Elm.Binary.make = function (_elm) {
                                ,leftBottomWalls: leftBottomWalls
                                ,viewMaze: viewMaze
                                ,view: view
+                               ,North: North
+                               ,East: East
+                               ,wallErasures: wallErasures
                                ,eraseWall: eraseWall
                                ,main: main};
 };
