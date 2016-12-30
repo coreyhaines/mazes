@@ -9,10 +9,9 @@ Elm.Repl.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $Time = Elm.Time.make(_elm);
+   $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var tsol = {ctor: "_Tuple0"};
-   var deltron3030 = $Time.inMilliseconds;
+   var deltron3030 = function (x) {    return x;};
    return _elm.Repl.values = {_op: _op,deltron3030: deltron3030,tsol: tsol};
 };
