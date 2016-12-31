@@ -27,6 +27,7 @@ type alias Room =
 type Algorithm
     = PlainGrid
     | BinaryTree
+    | Sidewinder
 
 
 type Side
@@ -146,6 +147,11 @@ binaryTreeAlgorithm { seed, width } rooms =
             rooms
 
 
+sidewinderAlgorithm : MazeGenerator
+sidewinderAlgorithm { seed } rooms =
+    ( rooms, seed )
+
+
 getAlgorithm : Algorithm -> MazeGenerator
 getAlgorithm algorithm =
     case algorithm of
@@ -154,6 +160,9 @@ getAlgorithm algorithm =
 
         BinaryTree ->
             binaryTreeAlgorithm
+
+        Sidewinder ->
+            sidewinderAlgorithm
 
 
 generateMaze : Algorithm -> Model -> Model
@@ -309,6 +318,8 @@ selectionForm model =
                 , algorithmChooser PlainGrid model.algorithm "None"
                 , span [] [ text " | " ]
                 , algorithmChooser BinaryTree model.algorithm "Binary Tree"
+                , span [] [ text " | " ]
+                , algorithmChooser Sidewinder model.algorithm "Sidewinder"
                 ]
             ]
 
