@@ -31,7 +31,11 @@ scale =
     10
 
 
-size =
+mazeWidth =
+    100
+
+
+mazeHeight =
     50
 
 
@@ -47,8 +51,8 @@ init : ( Model, Cmd Msg )
 init =
     let
         initialModel =
-            { width = size
-            , height = size
+            { width = mazeWidth
+            , height = mazeHeight
             , sides = []
             }
 
@@ -160,17 +164,14 @@ mazeView model =
         height =
             scaledSizeInPx model.height
     in
-        div [ style [ ( "position", "relative" ), ( "border-bottom", "1px solid black" ), ( "border-left", "1px solid black" ), ( "width", width ), ( "height", height ) ] ] <|
+        div [ style [ ( "position", "relative" ), ( "border-bottom", "1px solid black" ), ( "border-left", "1px solid black" ), ( "width", width ), ( "height", height ), ( "margin-left", "20px" ), ( "margin-top", "20px" ) ] ] <|
             roomsView model
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ mazeView model
-        , Html.hr [] []
-        , text <| toString model
-        ]
+        [ mazeView model ]
 
 
 main : Program Never Model Msg
