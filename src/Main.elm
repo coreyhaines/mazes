@@ -129,7 +129,7 @@ update msg model =
                     { model | seedForSideGenerator = seed }
 
                 ( rooms, finalSeed ) =
-                    generateRooms model
+                    generateRooms updatedModel
             in
                 ( { updatedModel | rooms = rooms, seedForSideGenerator = finalSeed }
                 , Cmd.none
@@ -164,12 +164,16 @@ update msg model =
                 )
 
         CommitDimensionChanges ->
-            ( { model
-                | width = Editable.commitBuffer model.width
-                , height = Editable.commitBuffer model.height
-              }
-            , Cmd.none
-            )
+            let
+                updatedModel =
+                    { model | width = Editable.commitBuffer model.width, height = Editable.commitBuffer model.height }
+
+                ( rooms, finalSeed ) =
+                    generateRooms updatedModel
+            in
+                ( { updatedModel | rooms = rooms, seedForSideGenerator = finalSeed }
+                , Cmd.none
+                )
 
 
 subscriptions : Model -> Sub Msg
