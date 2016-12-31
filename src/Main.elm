@@ -1,7 +1,8 @@
 module Main exposing (..)
 
-import Generators exposing (Algorithm(..), Room, Side)
+import Generators exposing (Algorithm(..))
 import Editable exposing (Editable)
+import Types exposing (Room, Side)
 import Html exposing (Html, text, div, input, label, button, span)
 import Html.Attributes exposing (style, type_, value)
 import Html.Events exposing (onInput, onClick)
@@ -79,7 +80,7 @@ coordinates width height =
 generateRooms : Model -> List Room
 generateRooms model =
     coordinates (mazeWidth model) (mazeHeight model)
-        |> List.map (\( x, y ) -> { x = x, y = y, walls = Generators.All })
+        |> List.map (\( x, y ) -> { x = x, y = y, walls = Types.All })
 
 
 generateMaze : Algorithm -> Model -> Model
@@ -162,13 +163,13 @@ roomView { x, y, walls } =
 
         ( topBorder, rightBorder ) =
             case walls of
-                Generators.Right ->
+                Types.Right ->
                     ( "0px", "1px solid black" )
 
-                Generators.Top ->
+                Types.Top ->
                     ( "1px solid black", "0px" )
 
-                Generators.All ->
+                Types.All ->
                     ( "1px solid black", "1px solid black" )
     in
         div

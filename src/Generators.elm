@@ -1,6 +1,7 @@
-module Generators exposing (Algorithm(..), getAlgorithm, Room, Side(..))
+module Generators exposing (Algorithm(..), getAlgorithm)
 
 import Random
+import Types exposing (Room, Side(..))
 import List.Extra as List
 
 
@@ -8,19 +9,6 @@ type Algorithm
     = PlainGrid
     | BinaryTree
     | Sidewinder
-
-
-type alias Room =
-    { x : Int
-    , y : Int
-    , walls : Side
-    }
-
-
-type Side
-    = All
-    | Right
-    | Top
 
 
 type alias MazeGenerator =
@@ -37,17 +25,17 @@ binaryTreeAlgorithm { seed, width } rooms =
     let
         pickASide which =
             if which then
-                Right
+                Types.Right
             else
-                Top
+                Types.Top
 
         nextWalls fromSeed room =
             if (room.y == 0) && (room.x == width - 1) then
-                ( All, fromSeed )
+                ( Types.All, fromSeed )
             else if room.y == 0 then
-                ( Top, fromSeed )
+                ( Types.Top, fromSeed )
             else if room.x == width - 1 then
-                ( Right, fromSeed )
+                ( Types.Right, fromSeed )
             else
                 Random.step (Random.map pickASide Random.bool) fromSeed
 
