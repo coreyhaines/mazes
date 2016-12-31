@@ -50,14 +50,6 @@ scale =
     10
 
 
-pickASide : Bool -> Side
-pickASide which =
-    if which then
-        Right
-    else
-        Top
-
-
 mazeWidth : Model -> Int
 mazeWidth model =
     Editable.value model.width
@@ -111,9 +103,40 @@ init =
         )
 
 
+pickASide : Bool -> Side
+pickASide which =
+    if which then
+        Right
+    else
+        Top
+
+
 binaryTreeAlgorithm : { seed : Random.Seed, width : Int, height : Int } -> List Room -> ( List Room, Random.Seed )
-binaryTreeAlgorithm { seed } rooms =
-    ( rooms, seed )
+binaryTreeAlgorithm { seed, width } rooms =
+    let
+        nextWalls fromSeed room =
+            if (room.y == 0) && (room.x == width - 1) then
+                ( All, fromSeed )
+            else if room.y == 0 then
+                ( Top, fromSeed )
+            else if room.x == width - 1 then
+                ( Right, fromSeed )
+            else
+                Random.step (Random.map pickASide Random.bool) fromSeed
+
+        figureOutSide room ( updatedRooms, currentSeed ) =
+            let
+                ( walls, nextSeed ) =
+                    nextWalls currentSeed room
+            in
+                ( { room | walls = walls } :: updatedRooms
+                , nextSeed
+                )
+    in
+        List.foldl
+            figureOutSide
+            ( [], seed )
+            rooms
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
