@@ -111,6 +111,11 @@ init =
         )
 
 
+binaryTreeAlgorithm : { seed : Random.Seed, width : Int, height : Int } -> List Room -> ( List Room, Random.Seed )
+binaryTreeAlgorithm { seed } rooms =
+    ( rooms, seed )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -121,13 +126,11 @@ update msg model =
 
         SetSideSeed seed ->
             let
-                updatedModel =
-                    { model | seedForSideGenerator = seed }
-
-                rooms =
-                    generateRooms updatedModel
+                ( rooms, finalSeed ) =
+                    generateRooms model
+                        |> binaryTreeAlgorithm { seed = seed, width = mazeWidth model, height = mazeHeight model }
             in
-                ( { updatedModel | rooms = rooms }
+                ( { model | rooms = rooms, seedForSideGenerator = finalSeed }
                 , Cmd.none
                 )
 
@@ -164,10 +167,11 @@ update msg model =
                 updatedModel =
                     { model | width = Editable.commitBuffer model.width, height = Editable.commitBuffer model.height }
 
-                rooms =
+                ( rooms, finalSeed ) =
                     generateRooms updatedModel
+                        |> binaryTreeAlgorithm { seed = model.seedForSideGenerator, width = mazeWidth updatedModel, height = mazeHeight updatedModel }
             in
-                ( { updatedModel | rooms = rooms }
+                ( { updatedModel | rooms = rooms, seedForSideGenerator = finalSeed }
                 , Cmd.none
                 )
 
