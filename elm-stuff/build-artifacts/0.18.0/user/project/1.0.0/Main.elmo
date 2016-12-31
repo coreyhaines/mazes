@@ -1,0 +1,44 @@
+var _user$project$Main$view = function (model) {
+	return _elm_lang$html$Html$text(
+		_elm_lang$core$Basics$toString(model));
+};
+var _user$project$Main$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$none;
+};
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{sides: _p0._0}),
+			_1: _elm_lang$core$Platform_Cmd$none
+		};
+	});
+var _user$project$Main$Model = function (a) {
+	return {sides: a};
+};
+var _user$project$Main$Top = {ctor: 'Top'};
+var _user$project$Main$Right = {ctor: 'Right'};
+var _user$project$Main$pickASide = function (which) {
+	return which ? _user$project$Main$Right : _user$project$Main$Top;
+};
+var _user$project$Main$SetSides = function (a) {
+	return {ctor: 'SetSides', _0: a};
+};
+var _user$project$Main$init = {
+	ctor: '_Tuple2',
+	_0: {
+		sides: {ctor: '[]'}
+	},
+	_1: A2(
+		_elm_lang$core$Random$generate,
+		_user$project$Main$SetSides,
+		A2(
+			_elm_lang$core$Random$list,
+			5,
+			A2(_elm_lang$core$Random$map, _user$project$Main$pickASide, _elm_lang$core$Random$bool)))
+};
+var _user$project$Main$main = _elm_lang$html$Html$program(
+	{init: _user$project$Main$init, update: _user$project$Main$update, view: _user$project$Main$view, subscriptions: _user$project$Main$subscriptions})();
