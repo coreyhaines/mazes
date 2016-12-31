@@ -25,7 +25,7 @@ type alias Room =
 
 
 type Side
-    = Both
+    = All
     | Right
     | Top
 
@@ -73,14 +73,10 @@ coordinates width height =
     List.lift2 (,) (List.range 0 (width - 1)) (List.range 0 (height - 1))
 
 
-generateRooms : Model -> ( List Room, Random.Seed )
+generateRooms : Model -> List Room
 generateRooms model =
-    let
-        rooms =
-            coordinates (mazeWidth model) (mazeHeight model)
-                |> List.map (\( x, y ) -> { x = x, y = y, walls = Both })
-    in
-        ( rooms, model.seedForSideGenerator )
+    coordinates (mazeWidth model) (mazeHeight model)
+        |> List.map (\( x, y ) -> { x = x, y = y, walls = All })
 
 
 init : ( Model, Cmd Msg )
@@ -128,10 +124,10 @@ update msg model =
                 updatedModel =
                     { model | seedForSideGenerator = seed }
 
-                ( rooms, finalSeed ) =
+                rooms =
                     generateRooms updatedModel
             in
-                ( { updatedModel | rooms = rooms, seedForSideGenerator = finalSeed }
+                ( { updatedModel | rooms = rooms }
                 , Cmd.none
                 )
 
@@ -168,10 +164,10 @@ update msg model =
                 updatedModel =
                     { model | width = Editable.commitBuffer model.width, height = Editable.commitBuffer model.height }
 
-                ( rooms, finalSeed ) =
+                rooms =
                     generateRooms updatedModel
             in
-                ( { updatedModel | rooms = rooms, seedForSideGenerator = finalSeed }
+                ( { updatedModel | rooms = rooms }
                 , Cmd.none
                 )
 
@@ -201,7 +197,7 @@ roomView { x, y, walls } =
                 Top ->
                     ( "1px solid black", "0px" )
 
-                Both ->
+                All ->
                     ( "1px solid black", "1px solid black" )
     in
         div
