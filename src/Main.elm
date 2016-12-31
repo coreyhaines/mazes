@@ -7,7 +7,8 @@ import List.Extra as List
 
 
 type alias Model =
-    { size : Int
+    { width : Int
+    , height : Int
     , sides : Sides
     }
 
@@ -29,6 +30,10 @@ scale =
     15
 
 
+size =
+    20
+
+
 pickASide : Bool -> Side
 pickASide which =
     if which then
@@ -40,11 +45,17 @@ pickASide which =
 init : ( Model, Cmd Msg )
 init =
     let
-        size =
-            10
+        initialModel =
+            { width = size
+            , height = size
+            , sides = []
+            }
+
+        generateSidesCmd =
+            Random.generate SetSides (Random.list (initialModel.width * initialModel.height) <| Random.map pickASide Random.bool)
     in
-        ( { size = size, sides = [] }
-        , Random.generate SetSides (Random.list (size * size) <| Random.map pickASide Random.bool)
+        ( initialModel
+        , generateSidesCmd
         )
 
 
@@ -77,7 +88,8 @@ roomView ( x, y ) =
         div
             [ style
                 [ ( "position", "absolute" )
-                , ( "border", "1px solid black" )
+                , ( "border-top", "1px solid black" )
+                , ( "border-right", "1px solid black" )
                 , ( "padding", "0" )
                 , ( "margin", "0" )
                 , ( "left", left )
@@ -89,25 +101,32 @@ roomView ( x, y ) =
             []
 
 
+coordinates : Int -> Int -> List ( Int, Int )
+coordinates width height =
+    List.lift2 (,) (List.range 0 (width - 1)) (List.range 0 (height - 1))
+
+
 roomsView : Model -> List (Html Msg)
 roomsView model =
-    let
-        range =
-            List.range 0 (model.size - 1)
+    coordinates model.width model.height
+        |> List.map roomView
 
-        coordinates =
-            List.lift2 (,) range range
-    in
-        List.map roomView coordinates
+
+scaledSizeInPx : Int -> String
+scaledSizeInPx size =
+    (toString (size * scale)) ++ "px"
 
 
 mazeView : Model -> Html Msg
 mazeView model =
     let
-        pixels =
-            (toString (model.size * scale)) ++ "px"
+        width =
+            scaledSizeInPx model.width
+
+        height =
+            scaledSizeInPx model.height
     in
-        div [ style [ ( "position", "relative" ), ( "border", "1px solid black" ), ( "width", pixels ), ( "height", pixels ) ] ] <|
+        div [ style [ ( "position", "relative" ), ( "border", "1px solid black" ), ( "width", width ), ( "height", height ) ] ] <|
             roomsView model
 
 
