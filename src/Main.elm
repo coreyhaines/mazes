@@ -12,7 +12,6 @@ type alias Model =
     { width : Editable Int
     , height : Editable Int
     , seedForSideGenerator : Random.Seed
-    , sides : Sides
     , rooms : List Room
     }
 
@@ -40,8 +39,7 @@ type Dimension
 
 
 type Msg
-    = SetSides Sides
-    | SetSideSeed Random.Seed
+    = SetSideSeed Random.Seed
     | SetDimension Dimension String
     | CommitDimensionChanges
 
@@ -84,14 +82,8 @@ init =
             { width = Editable.newEditing initialWidth
             , height = Editable.newEditing initialHeight
             , seedForSideGenerator = Random.initialSeed 0
-            , sides = []
             , rooms = []
             }
-
-        generateSidesCmd =
-            Random.map pickASide Random.bool
-                |> Random.list ((mazeWidth initialModel) * (mazeHeight initialModel))
-                |> Random.generate SetSides
 
         generateInitialSideSeedCmd =
             Random.int Random.minInt Random.maxInt
@@ -99,21 +91,19 @@ init =
                 |> Random.generate SetSideSeed
     in
         ( initialModel
-        , Cmd.batch [ generateSidesCmd, generateInitialSideSeedCmd ]
+        , generateInitialSideSeedCmd
         )
-
-
-pickASide : Bool -> Side
-pickASide which =
-    if which then
-        Right
-    else
-        Top
 
 
 binaryTreeAlgorithm : { seed : Random.Seed, width : Int, height : Int } -> List Room -> ( List Room, Random.Seed )
 binaryTreeAlgorithm { seed, width } rooms =
     let
+        pickASide which =
+            if which then
+                Right
+            else
+                Top
+
         nextWalls fromSeed room =
             if (room.y == 0) && (room.x == width - 1) then
                 ( All, fromSeed )
@@ -142,11 +132,6 @@ binaryTreeAlgorithm { seed, width } rooms =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SetSides sides ->
-            ( { model | sides = sides }
-            , Cmd.none
-            )
-
         SetSideSeed seed ->
             let
                 ( rooms, finalSeed ) =
