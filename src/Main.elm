@@ -75,8 +75,8 @@ subscriptions model =
     Sub.none
 
 
-roomView : ( Int, Int ) -> Html Msg
-roomView ( x, y ) =
+roomView : ( Int, Int, Side ) -> Html Msg
+roomView ( x, y, side ) =
     let
         left =
             scaledSizeInPx x
@@ -86,12 +86,24 @@ roomView ( x, y ) =
 
         width =
             scaledSizeInPx 1
+
+        topBorder =
+            if side == Right then
+                "0px"
+            else
+                "1px solid black"
+
+        rightBorder =
+            if side == Top then
+                "0px"
+            else
+                "1px solid black"
     in
         div
             [ style
                 [ ( "position", "absolute" )
-                , ( "border-top", "1px solid black" )
-                , ( "border-right", "1px solid black" )
+                , ( "border-top", topBorder )
+                , ( "border-right", rightBorder )
                 , ( "padding", "0" )
                 , ( "margin", "0" )
                 , ( "left", left )
@@ -108,9 +120,15 @@ coordinates width height =
     List.lift2 (,) (List.range 0 (width - 1)) (List.range 0 (height - 1))
 
 
+addSides : Sides -> List ( Int, Int ) -> List ( Int, Int, Side )
+addSides sides coordinates =
+    List.map2 (\side ( x, y ) -> ( x, y, side )) sides coordinates
+
+
 roomsView : Model -> List (Html Msg)
 roomsView model =
     coordinates model.width model.height
+        |> addSides model.sides
         |> List.map roomView
 
 
