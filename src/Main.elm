@@ -199,31 +199,25 @@ update msg model =
                 , Cmd.none
                 )
 
-        SetDimension Width newWidth ->
+        SetDimension which newValue ->
             let
-                updatedWidth =
-                    case String.toInt newWidth of
-                        Ok w ->
-                            Editable.setBuffer model.width w
-
-                        Err _ ->
-                            model.width
-            in
-                ( { model | width = updatedWidth }
-                , Cmd.none
-                )
-
-        SetDimension Height newValue ->
-            let
-                updatedHeight =
+                updateProperty property =
                     case String.toInt newValue of
                         Ok w ->
-                            Editable.setBuffer model.height w
+                            Editable.setBuffer property w
 
                         Err _ ->
-                            model.height
+                            property
+
+                updatedModel =
+                    case which of
+                        Height ->
+                            { model | height = updateProperty model.height }
+
+                        Width ->
+                            { model | width = updateProperty model.width }
             in
-                ( { model | height = updatedHeight }
+                ( updatedModel
                 , Cmd.none
                 )
 
