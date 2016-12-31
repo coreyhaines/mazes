@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (Html, text, div)
 import Html.Attributes exposing (style)
 import Random
+import List.Extra as List
 
 
 type alias Model =
@@ -25,7 +26,7 @@ type Msg
 
 
 scale =
-    3
+    15
 
 
 pickASide : Bool -> Side
@@ -61,20 +62,59 @@ subscriptions model =
     Sub.none
 
 
-borderView : Int -> Html Msg
-borderView size =
+roomView : ( Int, Int ) -> Html Msg
+roomView ( x, y ) =
+    let
+        left =
+            (toString (x * scale)) ++ "px"
+
+        top =
+            (toString (y * scale)) ++ "px"
+
+        width =
+            (toString scale) ++ "px"
+    in
+        div
+            [ style
+                [ ( "position", "absolute" )
+                , ( "border", "1px solid black" )
+                , ( "padding", "0" )
+                , ( "margin", "0" )
+                , ( "left", left )
+                , ( "top", top )
+                , ( "width", width )
+                , ( "height", width )
+                ]
+            ]
+            []
+
+
+roomsView : Model -> List (Html Msg)
+roomsView model =
+    let
+        range =
+            List.range 0 (model.size - 1)
+
+        coordinates =
+            List.lift2 (,) range range
+    in
+        List.map roomView coordinates
+
+
+mazeView : Model -> Html Msg
+mazeView model =
     let
         pixels =
-            (toString (size * size * scale)) ++ "px"
+            (toString (model.size * scale)) ++ "px"
     in
-        div [ style [ ( "position", "relative" ), ( "border", "1px solid black" ), ( "width", pixels ), ( "height", pixels ) ] ]
-            []
+        div [ style [ ( "position", "relative" ), ( "border", "1px solid black" ), ( "width", pixels ), ( "height", pixels ) ] ] <|
+            roomsView model
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ borderView model.size
+        [ mazeView model
         , Html.hr [] []
         , text <| toString model
         ]
