@@ -148,7 +148,7 @@ binaryTreeAlgorithm { seed, width } rooms =
 
 
 sidewinderAlgorithm : MazeGenerator
-sidewinderAlgorithm { seed, width } rooms =
+sidewinderAlgorithm { seed, width, height } rooms =
     let
         getRow index rooms =
             List.filter (\{ x, y, walls } -> y == index) rooms
@@ -161,14 +161,14 @@ sidewinderAlgorithm { seed, width } rooms =
             , currentSeed
             )
 
-        replaceRooms index rooms roomsToReplace =
+        replaceRooms index rooms ( roomsToReplace, seed ) =
             List.foldl
                 replaceRoom
                 ( rooms, seed )
                 roomsToReplace
 
-        updateTopRow seed width rooms =
-            List.map
+        updateTopRow width index ( rooms, seed ) =
+            ( List.map
                 (\room ->
                     if room.x < width - 1 then
                         { room | walls = Top }
@@ -176,13 +176,19 @@ sidewinderAlgorithm { seed, width } rooms =
                         { room | walls = All }
                 )
                 rooms
+            , seed
+            )
 
-        updateRow index updateRow rooms =
-            getRow index rooms
-                |> updateRow
+        processRow width height index ( rooms, seed ) =
+            ( rooms, seed )
+
+        updateRow processor index ( rooms, seed ) =
+            ( getRow index rooms, seed )
+                |> processor index
                 |> replaceRooms index rooms
     in
-        updateRow 0 (updateTopRow seed width) rooms
+        updateRow (updateTopRow width) 0 ( rooms, seed )
+            |> updateRow (processRow width height) 1
 
 
 getAlgorithm : Algorithm -> MazeGenerator
