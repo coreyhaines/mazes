@@ -261,8 +261,8 @@ selectionForm model =
 view : Model -> Html Msg
 view model =
     div []
-        [ mazeView model
-        , selectionForm model
+        [ selectionForm model
+        , mazeView model
         ]
 
 
