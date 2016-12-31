@@ -11,7 +11,16 @@ import List.Extra as List
 type alias Model =
     { width : Editable Int
     , height : Editable Int
+    , seedForSideGenerator : Random.Seed
     , sides : Sides
+    , rooms : List Room
+    }
+
+
+type alias Room =
+    { x : Int
+    , y : Int
+    , walls : Side
     }
 
 
@@ -32,6 +41,7 @@ type Dimension
 
 type Msg
     = SetSides Sides
+    | SetSideSeed Random.Seed
     | SetDimension Dimension String
     | CommitDimensionChanges
 
@@ -58,22 +68,50 @@ mazeHeight model =
     Editable.value model.height
 
 
+coordinates : Int -> Int -> List ( Int, Int )
+coordinates width height =
+    List.lift2 (,) (List.range 0 (width - 1)) (List.range 0 (height - 1))
+
+
+generateRooms : Model -> ( List Room, Random.Seed )
+generateRooms model =
+    let
+        rooms =
+            coordinates (mazeWidth model) (mazeHeight model)
+                |> List.map (\( x, y ) -> { x = x, y = y, walls = Both })
+    in
+        ( rooms, model.seedForSideGenerator )
+
+
 init : ( Model, Cmd Msg )
 init =
     let
+        initialWidth =
+            5
+
+        initialHeight =
+            5
+
         initialModel =
-            { width = Editable.newEditing 50
-            , height = Editable.newEditing 50
+            { width = Editable.newEditing initialWidth
+            , height = Editable.newEditing initialHeight
+            , seedForSideGenerator = Random.initialSeed 0
             , sides = []
+            , rooms = []
             }
 
         generateSidesCmd =
             Random.map pickASide Random.bool
                 |> Random.list ((mazeWidth initialModel) * (mazeHeight initialModel))
                 |> Random.generate SetSides
+
+        generateInitialSideSeedCmd =
+            Random.int Random.minInt Random.maxInt
+                |> Random.map Random.initialSeed
+                |> Random.generate SetSideSeed
     in
         ( initialModel
-        , generateSidesCmd
+        , Cmd.batch [ generateSidesCmd, generateInitialSideSeedCmd ]
         )
 
 
@@ -84,6 +122,18 @@ update msg model =
             ( { model | sides = sides }
             , Cmd.none
             )
+
+        SetSideSeed seed ->
+            let
+                updatedModel =
+                    { model | seedForSideGenerator = seed }
+
+                ( rooms, finalSeed ) =
+                    generateRooms model
+            in
+                ( { updatedModel | rooms = rooms, seedForSideGenerator = finalSeed }
+                , Cmd.none
+                )
 
         SetDimension Width newWidth ->
             let
@@ -127,8 +177,8 @@ subscriptions model =
     Sub.none
 
 
-roomView : ( Int, Int, Side ) -> Html Msg
-roomView ( x, y, side ) =
+roomView : Room -> Html Msg
+roomView { x, y, walls } =
     let
         left =
             scaledSizeInPx x
@@ -140,7 +190,7 @@ roomView ( x, y, side ) =
             scaledSizeInPx 1
 
         ( topBorder, rightBorder ) =
-            case side of
+            case walls of
                 Right ->
                     ( "0px", "1px solid black" )
 
@@ -166,38 +216,9 @@ roomView ( x, y, side ) =
             []
 
 
-coordinates : Int -> Int -> List ( Int, Int )
-coordinates width height =
-    List.lift2 (,) (List.range 0 (width - 1)) (List.range 0 (height - 1))
-
-
-addSides : Model -> List ( Int, Int ) -> List ( Int, Int, Side )
-addSides model coordinates =
-    let
-        width =
-            mazeWidth model
-
-        pickSide side x y =
-            if (x == width - 1) && (y == 0) then
-                Both
-            else if x == width - 1 then
-                Right
-            else if y == 0 then
-                Top
-            else
-                side
-
-        addSide side ( x, y ) =
-            ( x, y, pickSide side x y )
-    in
-        List.map2 addSide model.sides coordinates
-
-
 roomsView : Model -> List (Html Msg)
 roomsView model =
-    coordinates (mazeWidth model) (mazeHeight model)
-        |> addSides model
-        |> List.map roomView
+    List.map roomView model.rooms
 
 
 scaledSizeInPx : Int -> String
