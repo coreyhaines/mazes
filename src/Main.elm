@@ -65,25 +65,14 @@ mazeHeight model =
     Editable.value model.height
 
 
-coordinates : Int -> Int -> List ( Int, Int )
-coordinates width height =
-    List.lift2 (,) (List.range 0 (width - 1)) (List.range 0 (height - 1))
-
-
-generateRooms : Model -> List Room
-generateRooms model =
-    coordinates (mazeWidth model) (mazeHeight model)
-        |> List.map (\( x, y ) -> { x = x, y = y, walls = All })
-
-
 init : ( Model, Cmd Msg )
 init =
     let
         initialWidth =
-            5
+            50
 
         initialHeight =
-            5
+            30
 
         initialModel =
             { width = Editable.newEditing initialWidth
@@ -105,6 +94,17 @@ init =
 
 type alias MazeGenerator =
     { seed : Random.Seed, width : Int, height : Int } -> List Room -> ( List Room, Random.Seed )
+
+
+coordinates : Int -> Int -> List ( Int, Int )
+coordinates width height =
+    List.lift2 (,) (List.range 0 (width - 1)) (List.range 0 (height - 1))
+
+
+generateRooms : Model -> List Room
+generateRooms model =
+    coordinates (mazeWidth model) (mazeHeight model)
+        |> List.map (\( x, y ) -> { x = x, y = y, walls = All })
 
 
 plainGridAlgorithm : MazeGenerator
@@ -222,11 +222,6 @@ update msg model =
                 )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
 roomView : Room -> Html Msg
 roomView { x, y, walls } =
     let
@@ -324,6 +319,11 @@ view model =
         [ selectionForm model
         , mazeView model
         ]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 main : Program Never Model Msg
