@@ -90,7 +90,7 @@ init =
             , height = Editable.newEditing initialHeight
             , seedForSideGenerator = Random.initialSeed 0
             , rooms = []
-            , algorithm = PlainGrid
+            , algorithm = BinaryTree
             }
 
         generateInitialSideSeedCmd =
@@ -156,32 +156,46 @@ getAlgorithm algorithm =
             binaryTreeAlgorithm
 
 
+generateMaze : Algorithm -> Model -> Model
+generateMaze algorithm model =
+    let
+        mazeGenerator =
+            getAlgorithm algorithm
+
+        ( rooms, finalSeed ) =
+            generateRooms model
+                |> mazeGenerator { seed = model.seedForSideGenerator, width = mazeWidth model, height = mazeHeight model }
+    in
+        { model | algorithm = algorithm, rooms = rooms, seedForSideGenerator = finalSeed }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ChooseAlgorithm algorithm ->
             let
-                mazeGenerator =
-                    getAlgorithm algorithm
-
-                ( rooms, finalSeed ) =
-                    generateRooms model
-                        |> mazeGenerator { seed = model.seedForSideGenerator, width = mazeWidth model, height = mazeHeight model }
+                updatedModel =
+                    generateMaze algorithm model
             in
-                ( { model | algorithm = algorithm, rooms = rooms, seedForSideGenerator = finalSeed }
+                ( updatedModel
                 , Cmd.none
                 )
 
         SetSideSeed seed ->
             let
-                algorithm =
-                    getAlgorithm model.algorithm
-
-                ( rooms, finalSeed ) =
-                    generateRooms model
-                        |> algorithm { seed = seed, width = mazeWidth model, height = mazeHeight model }
+                updatedModel =
+                    generateMaze model.algorithm { model | seedForSideGenerator = seed }
             in
-                ( { model | rooms = rooms, seedForSideGenerator = finalSeed }
+                ( updatedModel
+                , Cmd.none
+                )
+
+        CommitDimensionChanges ->
+            let
+                updatedModel =
+                    generateMaze model.algorithm { model | width = Editable.commitBuffer model.width, height = Editable.commitBuffer model.height }
+            in
+                ( updatedModel
                 , Cmd.none
                 )
 
@@ -210,22 +224,6 @@ update msg model =
                             model.height
             in
                 ( { model | height = updatedHeight }
-                , Cmd.none
-                )
-
-        CommitDimensionChanges ->
-            let
-                updatedModel =
-                    { model | width = Editable.commitBuffer model.width, height = Editable.commitBuffer model.height }
-
-                algorithm =
-                    getAlgorithm model.algorithm
-
-                ( rooms, finalSeed ) =
-                    generateRooms updatedModel
-                        |> algorithm { seed = model.seedForSideGenerator, width = mazeWidth updatedModel, height = mazeHeight updatedModel }
-            in
-                ( { updatedModel | rooms = rooms, seedForSideGenerator = finalSeed }
                 , Cmd.none
                 )
 
