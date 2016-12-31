@@ -52,7 +52,9 @@ init =
             }
 
         generateSidesCmd =
-            Random.generate SetSides (Random.list (initialModel.width * initialModel.height) <| Random.map pickASide Random.bool)
+            Random.map pickASide Random.bool
+                |> Random.list (initialModel.width * initialModel.height)
+                |> Random.generate SetSides
     in
         ( initialModel
         , generateSidesCmd
@@ -77,13 +79,13 @@ roomView : ( Int, Int ) -> Html Msg
 roomView ( x, y ) =
     let
         left =
-            (toString (x * scale)) ++ "px"
+            scaledSizeInPx x
 
         top =
-            (toString (y * scale)) ++ "px"
+            scaledSizeInPx y
 
         width =
-            (toString scale) ++ "px"
+            scaledSizeInPx 1
     in
         div
             [ style
