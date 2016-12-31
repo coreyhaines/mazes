@@ -1,14 +1,16 @@
 module Main exposing (..)
 
-import Html exposing (Html, text, div)
-import Html.Attributes exposing (style)
+import Editable exposing (Editable)
+import Html exposing (Html, text, div, input, label, button)
+import Html.Attributes exposing (style, type_, value)
+import Html.Events exposing (onInput, onClick)
 import Random
 import List.Extra as List
 
 
 type alias Model =
-    { width : Int
-    , height : Int
+    { width : Editable Int
+    , height : Editable Int
     , sides : Sides
     }
 
@@ -23,20 +25,19 @@ type alias Sides =
     List Side
 
 
+type Dimension
+    = Width
+    | Height
+
+
 type Msg
     = SetSides Sides
+    | SetDimension Dimension String
+    | CommitDimensionChanges
 
 
 scale =
     10
-
-
-mazeWidth =
-    100
-
-
-mazeHeight =
-    50
 
 
 pickASide : Bool -> Side
@@ -47,18 +48,28 @@ pickASide which =
         Top
 
 
+mazeWidth : Model -> Int
+mazeWidth model =
+    Editable.value model.width
+
+
+mazeHeight : Model -> Int
+mazeHeight model =
+    Editable.value model.height
+
+
 init : ( Model, Cmd Msg )
 init =
     let
         initialModel =
-            { width = mazeWidth
-            , height = mazeHeight
+            { width = Editable.newEditing 50
+            , height = Editable.newEditing 50
             , sides = []
             }
 
         generateSidesCmd =
             Random.map pickASide Random.bool
-                |> Random.list (initialModel.width * initialModel.height)
+                |> Random.list ((mazeWidth initialModel) * (mazeHeight initialModel))
                 |> Random.generate SetSides
     in
         ( initialModel
@@ -71,6 +82,42 @@ update msg model =
     case msg of
         SetSides sides ->
             ( { model | sides = sides }
+            , Cmd.none
+            )
+
+        SetDimension Width newWidth ->
+            let
+                updatedWidth =
+                    case String.toInt newWidth of
+                        Ok w ->
+                            Editable.setBuffer model.width w
+
+                        Err _ ->
+                            model.width
+            in
+                ( { model | width = updatedWidth }
+                , Cmd.none
+                )
+
+        SetDimension Height newValue ->
+            let
+                updatedHeight =
+                    case String.toInt newValue of
+                        Ok w ->
+                            Editable.setBuffer model.height w
+
+                        Err _ ->
+                            model.height
+            in
+                ( { model | height = updatedHeight }
+                , Cmd.none
+                )
+
+        CommitDimensionChanges ->
+            ( { model
+                | width = Editable.commitBuffer model.width
+                , height = Editable.commitBuffer model.height
+              }
             , Cmd.none
             )
 
@@ -127,10 +174,13 @@ coordinates width height =
 addSides : Model -> List ( Int, Int ) -> List ( Int, Int, Side )
 addSides model coordinates =
     let
+        width =
+            mazeWidth model
+
         pickSide side x y =
-            if (x == model.width - 1) && (y == 0) then
+            if (x == width - 1) && (y == 0) then
                 Both
-            else if x == model.width - 1 then
+            else if x == width - 1 then
                 Right
             else if y == 0 then
                 Top
@@ -145,7 +195,7 @@ addSides model coordinates =
 
 roomsView : Model -> List (Html Msg)
 roomsView model =
-    coordinates model.width model.height
+    coordinates (mazeWidth model) (mazeHeight model)
         |> addSides model
         |> List.map roomView
 
@@ -159,19 +209,36 @@ mazeView : Model -> Html Msg
 mazeView model =
     let
         width =
-            scaledSizeInPx model.width
+            scaledSizeInPx <| mazeWidth model
 
         height =
-            scaledSizeInPx model.height
+            scaledSizeInPx <| mazeHeight model
     in
         div [ style [ ( "position", "relative" ), ( "border-bottom", "1px solid black" ), ( "border-left", "1px solid black" ), ( "width", width ), ( "height", height ), ( "margin-left", "20px" ), ( "margin-top", "20px" ) ] ] <|
             roomsView model
 
 
+selectionForm : Model -> Html Msg
+selectionForm model =
+    div []
+        [ div []
+            [ label [] [ text "Width" ]
+            , input [ type_ "number", onInput (SetDimension Width), value <| toString <| Editable.bufferValue model.width ] []
+            ]
+        , div []
+            [ label [] [ text "Height" ]
+            , input [ type_ "number", onInput (SetDimension Height), value <| toString <| Editable.bufferValue model.height ] []
+            ]
+        , button [ onClick CommitDimensionChanges ] [ text "Set New Dimensions" ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     div []
-        [ mazeView model ]
+        [ mazeView model
+        , selectionForm model
+        ]
 
 
 main : Program Never Model Msg
