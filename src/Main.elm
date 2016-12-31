@@ -70,17 +70,17 @@ init : ( Model, Cmd Msg )
 init =
     let
         initialWidth =
-            50
+            5
 
         initialHeight =
-            30
+            5
 
         initialModel =
             { width = Editable.newEditing initialWidth
             , height = Editable.newEditing initialHeight
             , seedForSideGenerator = Random.initialSeed 0
             , rooms = []
-            , algorithm = BinaryTree
+            , algorithm = Sidewinder
             }
 
         generateInitialSideSeedCmd =
@@ -148,8 +148,41 @@ binaryTreeAlgorithm { seed, width } rooms =
 
 
 sidewinderAlgorithm : MazeGenerator
-sidewinderAlgorithm { seed } rooms =
-    ( rooms, seed )
+sidewinderAlgorithm { seed, width } rooms =
+    let
+        getRow index rooms =
+            List.filter (\{ x, y, walls } -> y == index) rooms
+
+        sameRoom room1 room2 =
+            (room1.x == room2.x && room1.y == room2.y)
+
+        replaceRoom room ( updatedRooms, currentSeed ) =
+            ( List.replaceIf (sameRoom room) room updatedRooms
+            , currentSeed
+            )
+
+        replaceRooms index rooms roomsToReplace =
+            List.foldl
+                replaceRoom
+                ( rooms, seed )
+                roomsToReplace
+
+        updateTopRow seed width rooms =
+            List.map
+                (\room ->
+                    if room.x < width - 1 then
+                        { room | walls = Top }
+                    else
+                        { room | walls = All }
+                )
+                rooms
+
+        updateRow index updateRow rooms =
+            getRow index rooms
+                |> updateRow
+                |> replaceRooms index rooms
+    in
+        updateRow 0 (updateTopRow seed width) rooms
 
 
 getAlgorithm : Algorithm -> MazeGenerator
