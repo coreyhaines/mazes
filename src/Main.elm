@@ -29,6 +29,7 @@ type Msg
     | SetDimension Dimension String
     | CommitDimensionChanges
     | ChooseAlgorithm Algorithm
+    | RegenerateMaze
 
 
 scale =
@@ -99,6 +100,15 @@ generateMaze algorithm model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        RegenerateMaze ->
+            let
+                updatedModel =
+                    generateMaze model.algorithm model
+            in
+                ( updatedModel
+                , Cmd.none
+                )
+
         ChooseAlgorithm algorithm ->
             let
                 updatedModel =
@@ -239,6 +249,7 @@ selectionForm model =
                 , span [] [ text " | " ]
                 , algorithmChooser Sidewinder model.algorithm "Sidewinder"
                 ]
+            , button [ onClick RegenerateMaze ] [ text "Regenerate Maze" ]
             ]
 
 
