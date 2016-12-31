@@ -28,11 +28,11 @@ type Msg
 
 
 scale =
-    15
+    10
 
 
 size =
-    20
+    50
 
 
 pickASide : Bool -> Side
@@ -160,7 +160,7 @@ mazeView model =
         height =
             scaledSizeInPx model.height
     in
-        div [ style [ ( "position", "relative" ), ( "border", "1px solid black" ), ( "width", width ), ( "height", height ) ] ] <|
+        div [ style [ ( "position", "relative" ), ( "border-bottom", "1px solid black" ), ( "border-left", "1px solid black" ), ( "width", width ), ( "height", height ) ] ] <|
             roomsView model
 
 
