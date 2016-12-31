@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Editable exposing (Editable)
-import Html exposing (Html, text, div, input, label, button)
+import Html exposing (Html, text, div, input, label, button, span)
 import Html.Attributes exposing (style, type_, value)
 import Html.Events exposing (onInput, onClick)
 import Random
@@ -13,6 +13,7 @@ type alias Model =
     , height : Editable Int
     , seedForSideGenerator : Random.Seed
     , rooms : List Room
+    , algorithm : Algorithm
     }
 
 
@@ -21,6 +22,11 @@ type alias Room =
     , y : Int
     , walls : Side
     }
+
+
+type Algorithm
+    = PlainGrid
+    | BinaryTree
 
 
 type Side
@@ -42,6 +48,7 @@ type Msg
     = SetSideSeed Random.Seed
     | SetDimension Dimension String
     | CommitDimensionChanges
+    | ChooseAlgorithm Algorithm
 
 
 scale =
@@ -83,6 +90,7 @@ init =
             , height = Editable.newEditing initialHeight
             , seedForSideGenerator = Random.initialSeed 0
             , rooms = []
+            , algorithm = PlainGrid
             }
 
         generateInitialSideSeedCmd =
@@ -95,7 +103,16 @@ init =
         )
 
 
-binaryTreeAlgorithm : { seed : Random.Seed, width : Int, height : Int } -> List Room -> ( List Room, Random.Seed )
+type alias MazeGenerator =
+    { seed : Random.Seed, width : Int, height : Int } -> List Room -> ( List Room, Random.Seed )
+
+
+plainGridAlgorithm : MazeGenerator
+plainGridAlgorithm { seed } rooms =
+    ( rooms, seed )
+
+
+binaryTreeAlgorithm : MazeGenerator
 binaryTreeAlgorithm { seed, width } rooms =
     let
         pickASide which =
@@ -129,14 +146,40 @@ binaryTreeAlgorithm { seed, width } rooms =
             rooms
 
 
+getAlgorithm : Algorithm -> MazeGenerator
+getAlgorithm algorithm =
+    case algorithm of
+        PlainGrid ->
+            plainGridAlgorithm
+
+        BinaryTree ->
+            binaryTreeAlgorithm
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SetSideSeed seed ->
+        ChooseAlgorithm algorithm ->
             let
+                mazeGenerator =
+                    getAlgorithm algorithm
+
                 ( rooms, finalSeed ) =
                     generateRooms model
-                        |> binaryTreeAlgorithm { seed = seed, width = mazeWidth model, height = mazeHeight model }
+                        |> mazeGenerator { seed = model.seedForSideGenerator, width = mazeWidth model, height = mazeHeight model }
+            in
+                ( { model | algorithm = algorithm, rooms = rooms, seedForSideGenerator = finalSeed }
+                , Cmd.none
+                )
+
+        SetSideSeed seed ->
+            let
+                algorithm =
+                    getAlgorithm model.algorithm
+
+                ( rooms, finalSeed ) =
+                    generateRooms model
+                        |> algorithm { seed = seed, width = mazeWidth model, height = mazeHeight model }
             in
                 ( { model | rooms = rooms, seedForSideGenerator = finalSeed }
                 , Cmd.none
@@ -175,9 +218,12 @@ update msg model =
                 updatedModel =
                     { model | width = Editable.commitBuffer model.width, height = Editable.commitBuffer model.height }
 
+                algorithm =
+                    getAlgorithm model.algorithm
+
                 ( rooms, finalSeed ) =
                     generateRooms updatedModel
-                        |> binaryTreeAlgorithm { seed = model.seedForSideGenerator, width = mazeWidth updatedModel, height = mazeHeight updatedModel }
+                        |> algorithm { seed = model.seedForSideGenerator, width = mazeWidth updatedModel, height = mazeHeight updatedModel }
             in
                 ( { updatedModel | rooms = rooms, seedForSideGenerator = finalSeed }
                 , Cmd.none
@@ -253,17 +299,31 @@ mazeView model =
 
 selectionForm : Model -> Html Msg
 selectionForm model =
-    div []
-        [ div []
-            [ label [] [ text "Width" ]
-            , input [ type_ "number", onInput (SetDimension Width), value <| toString <| Editable.bufferValue model.width ] []
+    let
+        algorithmChooser algorithm currentAlgorithm label =
+            if algorithm == currentAlgorithm then
+                span [] [ text <| "<X> " ++ label ]
+            else
+                span [ onClick <| ChooseAlgorithm algorithm ] [ text <| "< > " ++ label ]
+    in
+        div []
+            [ div []
+                [ label [] [ text "Width" ]
+                , input [ type_ "number", onInput (SetDimension Width), value <| toString <| Editable.bufferValue model.width ] []
+                ]
+            , div []
+                [ label [] [ text "Height" ]
+                , input [ type_ "number", onInput (SetDimension Height), value <| toString <| Editable.bufferValue model.height ] []
+                ]
+            , button [ onClick CommitDimensionChanges ] [ text "Set New Dimensions" ]
+            , div []
+                [ text "Algorithm"
+                , span [] [ text " | " ]
+                , algorithmChooser PlainGrid model.algorithm "None"
+                , span [] [ text " | " ]
+                , algorithmChooser BinaryTree model.algorithm "Binary Tree"
+                ]
             ]
-        , div []
-            [ label [] [ text "Height" ]
-            , input [ type_ "number", onInput (SetDimension Height), value <| toString <| Editable.bufferValue model.height ] []
-            ]
-        , button [ onClick CommitDimensionChanges ] [ text "Set New Dimensions" ]
-        ]
 
 
 view : Model -> Html Msg
