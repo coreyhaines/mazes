@@ -14,7 +14,8 @@ type alias Model =
 
 
 type Side
-    = Right
+    = Both
+    | Right
     | Top
 
 
@@ -87,17 +88,16 @@ roomView ( x, y, side ) =
         width =
             scaledSizeInPx 1
 
-        topBorder =
-            if side == Right then
-                "0px"
-            else
-                "1px solid black"
+        ( topBorder, rightBorder ) =
+            case side of
+                Right ->
+                    ( "0px", "1px solid black" )
 
-        rightBorder =
-            if side == Top then
-                "0px"
-            else
-                "1px solid black"
+                Top ->
+                    ( "1px solid black", "0px" )
+
+                Both ->
+                    ( "1px solid black", "1px solid black" )
     in
         div
             [ style
@@ -120,15 +120,29 @@ coordinates width height =
     List.lift2 (,) (List.range 0 (width - 1)) (List.range 0 (height - 1))
 
 
-addSides : Sides -> List ( Int, Int ) -> List ( Int, Int, Side )
-addSides sides coordinates =
-    List.map2 (\side ( x, y ) -> ( x, y, side )) sides coordinates
+addSides : Model -> List ( Int, Int ) -> List ( Int, Int, Side )
+addSides model coordinates =
+    let
+        pickSide side x y =
+            if (x == model.width - 1) && (y == 0) then
+                Both
+            else if x == model.width - 1 then
+                Right
+            else if y == 0 then
+                Top
+            else
+                side
+
+        addSide side ( x, y ) =
+            ( x, y, pickSide side x y )
+    in
+        List.map2 addSide model.sides coordinates
 
 
 roomsView : Model -> List (Html Msg)
 roomsView model =
     coordinates model.width model.height
-        |> addSides model.sides
+        |> addSides model
         |> List.map roomView
 
 
